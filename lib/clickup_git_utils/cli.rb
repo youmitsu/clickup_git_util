@@ -11,11 +11,10 @@ module ClickupGitUtils
       impl = Impl.new
       impl.checkTasks
 
-      puts 'hoge'
       ## 作成するタスクの選択
-      p 'Please input taskId below to checkout.'
+      puts 'Please input taskId below to checkout.'
       inputTaskId = STDIN.gets.chomp
-      p "#{inputTaskId} selected."
+      puts "#{inputTaskId} selected."
 
       impl.checkout_new(inputTaskId)
     end
@@ -43,7 +42,7 @@ module ClickupGitUtils
         return
       end
       @token = clickupToken
-      p @token
+      puts "used token: #{token}"
 
       @client = Faraday.new(url: 'https://api.clickup.com') do |f|
         f.request  :url_encoded
@@ -53,17 +52,30 @@ module ClickupGitUtils
     end
 
     def checkout_new(id)
-      # task = @tasks.select { |task| task['id'] == id }
       branchName = "feature/##{id}"
       `git checkout -b #{branchName}`
+    end
+
+    def checkout(id)
+      branchName = "feature/##{id}"
+      `git checkout #{branchName}`      
+    end
+
+    def push(id)
+      branchName = "feature/##{id}"
+      `git push #{branchName}`      
+    end
+
+    def pull(id)
+      branchName = "feature/##{id}"
+      `git pull #{branchName}`      
     end
 
     ## Taskの取得 ##
     def checkTasks
       res = @client.get do |req|
         req.headers['Authorization'] = @token
-        req.url '/api/v2/team/906839/task'
-        # req.url '/api/v2/list/6-1036289-2/task?archived=false&page=&order_by=&reverse=&subtasks=&space_ids%5B%5D=&project_ids%5B%5D=&statuses%5B%5D=&include_closed=&assignees%5B%5D=&due_date_gt=&due_date_lt=&date_created_gt=&date_created_lt=&date_updated_gt=&date_updated_lt='
+        req.url '/api/v2/team/906839/task?archived=false&list_ids[]=1036289'
       end
       pp res.status
       if res.body.nil?
